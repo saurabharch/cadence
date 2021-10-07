@@ -584,6 +584,10 @@ func (s *contextImpl) CreateWorkflowExecution(
 	ctx context.Context,
 	request *persistence.CreateWorkflowExecutionRequest,
 ) (*persistence.CreateWorkflowExecutionResponse, error) {
+	if s.isClosed() {
+		return nil, ErrShardClosed
+	}
+
 	ctx, cancel, err := s.ensureMinContextTimeout(ctx)
 	if err != nil {
 		return nil, err
@@ -620,6 +624,9 @@ func (s *contextImpl) CreateWorkflowExecution(
 
 Create_Loop:
 	for attempt := 0; attempt < conditionalRetryCount && ctx.Err() == nil; attempt++ {
+		if s.isClosed() {
+			return nil, ErrShardClosed
+		}
 		currentRangeID := s.getRangeID()
 		request.RangeID = currentRangeID
 
@@ -687,6 +694,10 @@ func (s *contextImpl) UpdateWorkflowExecution(
 	ctx context.Context,
 	request *persistence.UpdateWorkflowExecutionRequest,
 ) (*persistence.UpdateWorkflowExecutionResponse, error) {
+	if s.isClosed() {
+		return nil, ErrShardClosed
+	}
+
 	ctx, cancel, err := s.ensureMinContextTimeout(ctx)
 	if err != nil {
 		return nil, err
@@ -737,6 +748,9 @@ func (s *contextImpl) UpdateWorkflowExecution(
 
 Update_Loop:
 	for attempt := 0; attempt < conditionalRetryCount && ctx.Err() == nil; attempt++ {
+		if s.isClosed() {
+			return nil, ErrShardClosed
+		}
 		currentRangeID := s.getRangeID()
 		request.RangeID = currentRangeID
 
@@ -803,6 +817,10 @@ func (s *contextImpl) ConflictResolveWorkflowExecution(
 	ctx context.Context,
 	request *persistence.ConflictResolveWorkflowExecutionRequest,
 ) (*persistence.ConflictResolveWorkflowExecutionResponse, error) {
+	if s.isClosed() {
+		return nil, ErrShardClosed
+	}
+
 	ctx, cancel, err := s.ensureMinContextTimeout(ctx)
 	if err != nil {
 		return nil, err
@@ -866,6 +884,9 @@ func (s *contextImpl) ConflictResolveWorkflowExecution(
 
 Conflict_Resolve_Loop:
 	for attempt := 0; attempt < conditionalRetryCount && ctx.Err() == nil; attempt++ {
+		if s.isClosed() {
+			return nil, ErrShardClosed
+		}
 		currentRangeID := s.getRangeID()
 		request.RangeID = currentRangeID
 		resp, err := s.executionManager.ConflictResolveWorkflowExecution(ctx, request)
@@ -943,6 +964,9 @@ func (s *contextImpl) AppendHistoryV2Events(
 	domainID string,
 	execution types.WorkflowExecution,
 ) (int, error) {
+	if s.isClosed() {
+		return 0, ErrShardClosed
+	}
 
 	domainName, err := s.GetDomainCache().GetDomainName(domainID)
 	if err != nil {
@@ -1055,6 +1079,10 @@ func (s *contextImpl) renewRangeLocked(isStealing bool) error {
 	var attempt int32
 Retry_Loop:
 	for attempt = 0; attempt < conditionalRetryCount; attempt++ {
+		if s.isClosed() {
+			err = ErrShardClosed
+			break Retry_Loop
+		}
 		err = s.GetShardManager().UpdateShard(context.Background(), &persistence.UpdateShardRequest{
 			ShardInfo:       updatedShardInfo,
 			PreviousRangeID: s.shardInfo.RangeID})
@@ -1351,6 +1379,9 @@ func (s *contextImpl) ReplicateFailoverMarkers(
 	ctx context.Context,
 	markers []*persistence.FailoverMarkerTask,
 ) error {
+	if s.isClosed() {
+		return ErrShardClosed
+	}
 
 	tasks := make([]persistence.Task, 0, len(markers))
 	for _, marker := range markers {
@@ -1372,6 +1403,9 @@ func (s *contextImpl) ReplicateFailoverMarkers(
 	var err error
 Retry_Loop:
 	for attempt := int32(0); attempt < conditionalRetryCount && ctx.Err() == nil; attempt++ {
+		if s.isClosed() {
+			return ErrShardClosed
+		}
 		err = s.executionManager.CreateFailoverMarkerTasks(
 			ctx,
 			&persistence.CreateFailoverMarkersRequest{
