@@ -180,11 +180,6 @@ func (policy *SelectedAPIsForwardingRedirectionPolicy) getTargetClusterAndIsDoma
 		return policy.currentClusterName, false
 	}
 
-	if len(domainEntry.GetReplicationConfig().Clusters) == 1 {
-		// do not do dc redirection if domain is only targeting at 1 dc (effectively local domain)
-		return policy.currentClusterName, false
-	}
-
 	call := yarpc.CallFromContext(ctx)
 	enforceDCRedirection := call.Header(common.EnforceDCRedirection)
 	if !policy.config.EnableDomainNotActiveAutoForwarding(domainEntry.GetInfo().Name) && enforceDCRedirection != "true" {
