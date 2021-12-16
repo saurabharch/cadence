@@ -1124,6 +1124,15 @@ func (c *contextImpl) updateWorkflowExecutionWithRetry(
 	)
 	switch err.(type) {
 	case nil:
+		c.logger.Info(
+			"Persistent store operation success",
+			tag.WorkflowID(c.workflowExecution.GetWorkflowID()),
+			tag.WorkflowRunID(c.workflowExecution.GetRunID()),
+			tag.WorkflowDomainID(c.domainID),
+			tag.StoreOperationUpdateWorkflowExecution,
+			tag.Number(c.updateCondition),
+			tag.NextNumber(request.UpdateWorkflowMutation.ExecutionInfo.NextEventID),
+		)
 		return resp, nil
 	case *persistence.ConditionFailedError:
 		// TODO get rid of ErrConflict
@@ -1137,6 +1146,7 @@ func (c *contextImpl) updateWorkflowExecutionWithRetry(
 			tag.StoreOperationUpdateWorkflowExecution,
 			tag.Error(err),
 			tag.Number(c.updateCondition),
+			tag.NextNumber(request.UpdateWorkflowMutation.ExecutionInfo.NextEventID),
 		)
 		return nil, err
 	}

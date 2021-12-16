@@ -752,6 +752,12 @@ Update_Loop:
 					// RangeID might have been renewed by the same host while this update was in flight
 					// Retry the operation if we still have the shard ownership
 					if currentRangeID != s.getRangeID() {
+						s.logger.Info(
+							"rangeID changed",
+							tag.ShardID(s.GetShardID()),
+							tag.Number(currentRangeID),
+							tag.NextNumber(s.getRangeID()),
+						)
 						continue Update_Loop
 					} else {
 						// Shard is stolen, trigger shutdown of history engine
@@ -761,7 +767,7 @@ Update_Loop:
 							tag.Error(err),
 						)
 						s.closeShard()
-						break Update_Loop
+						return nil, err
 					}
 				}
 			default:
@@ -781,7 +787,7 @@ Update_Loop:
 							tag.Error(err),
 						)
 						s.closeShard()
-						break Update_Loop
+						return nil, err
 					}
 				}
 			}
