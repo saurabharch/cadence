@@ -512,8 +512,15 @@ func newTimerQueueStandbyProcessor(
 		}
 		if timer.TaskType == persistence.TaskTypeWorkflowTimeout ||
 			timer.TaskType == persistence.TaskTypeDeleteHistoryEvent {
-			// guarantee the processing of workflow execution history deletion
-			return true, nil
+			domainEntry, err := shard.GetDomainCache().GetDomainByID(timer.DomainID)
+			if err == nil {
+				for _, cluster := range domainEntry.GetReplicationConfig().Clusters {
+					if cluster.ClusterName == clusterName {
+						// guarantee the processing of workflow execution history deletion
+						return true, nil
+					}
+				}
+			}
 		}
 		return taskAllocator.VerifyStandbyTask(clusterName, timer.DomainID, timer)
 	}

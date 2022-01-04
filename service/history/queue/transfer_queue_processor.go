@@ -521,8 +521,15 @@ func newTransferQueueStandbyProcessor(
 			return false, errUnexpectedQueueTask
 		}
 		if task.TaskType == persistence.TransferTaskTypeCloseExecution {
-			// guarantee the processing of workflow execution close
-			return true, nil
+			domainEntry, err := shard.GetDomainCache().GetDomainByID(task.DomainID)
+			if err == nil {
+				for _, cluster := range domainEntry.GetReplicationConfig().Clusters {
+					if cluster.ClusterName == clusterName {
+						// guarantee the processing of workflow execution close
+						return true, nil
+					}
+				}
+			}
 		}
 		return taskAllocator.VerifyStandbyTask(clusterName, task.DomainID, task)
 	}
