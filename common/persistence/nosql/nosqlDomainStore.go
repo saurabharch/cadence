@@ -23,6 +23,7 @@ package nosql
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/uber/cadence/common"
 	"github.com/uber/cadence/common/cluster"
@@ -155,6 +156,11 @@ func (m *nosqlDomainStore) GetDomain(
 			identity = ID
 		}
 		if m.db.IsNotFoundError(err) {
+			if identity == "00000000-0000-0000-0000-000000000000" {
+				return &types.EntityNotExistsError{
+					Message: fmt.Sprintf("Domain %s invalid. %s", identity, string(debug.Stack())),
+				}
+			}
 			return &types.EntityNotExistsError{
 				Message: fmt.Sprintf("Domain %s does not exist.", identity),
 			}
