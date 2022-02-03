@@ -4392,7 +4392,7 @@ func (wh *WorkflowHandler) normalizeVersionedErrors(ctx context.Context, err err
 		if vErr == nil {
 			return err
 		}
-		wh.GetLogger().Error(fmt.Sprintf("version check error: %s, %s, %s", clientFeatureVersion, clientImpl, featureFlags))
+		wh.GetLogger().Error(fmt.Sprintf("version check error: %s, %s, %s", clientFeatureVersion, clientImpl, featureFlags), tag.Error(vErr))
 		return &types.EntityNotExistsError{Message: "Workflow execution already completed."}
 	default:
 		return err
