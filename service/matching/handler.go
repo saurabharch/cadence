@@ -24,8 +24,11 @@ package matching
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
+
+	"go.uber.org/yarpc"
 
 	"github.com/uber/cadence/common"
 	"github.com/uber/cadence/common/log"
@@ -303,6 +306,10 @@ func (h *handlerImpl) QueryWorkflow(
 ) (resp *types.QueryWorkflowResponse, retError error) {
 	defer log.CapturePanic(h.GetLogger(), &retError)
 
+	call := yarpc.CallFromContext(ctx)
+	clientFeatureVersion := call.Header(common.FeatureVersionHeaderName)
+	clientImpl := call.Header(common.ClientImplHeaderName)
+	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s", clientFeatureVersion, clientImpl))
 	domainName := h.domainName(request.GetDomainUUID())
 	hCtx := h.newHandlerContext(
 		ctx,

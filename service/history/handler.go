@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/pborman/uuid"
+	"go.uber.org/yarpc"
 	"go.uber.org/yarpc/yarpcerrors"
 
 	"github.com/uber/cadence/common"
@@ -1281,6 +1282,10 @@ func (h *handlerImpl) QueryWorkflow(
 	defer log.CapturePanic(h.GetLogger(), &retError)
 	h.startWG.Wait()
 
+	call := yarpc.CallFromContext(ctx)
+	clientFeatureVersion := call.Header(common.FeatureVersionHeaderName)
+	clientImpl := call.Header(common.ClientImplHeaderName)
+	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s", clientFeatureVersion, clientImpl))
 	scope, sw := h.startRequestProfile(ctx, metrics.HistoryQueryWorkflowScope)
 	defer sw.Stop()
 
