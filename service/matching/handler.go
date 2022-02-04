@@ -309,8 +309,8 @@ func (h *handlerImpl) QueryWorkflow(
 	call := yarpc.CallFromContext(ctx)
 	clientFeatureVersion := call.Header(common.FeatureVersionHeaderName)
 	clientImpl := call.Header(common.ClientImplHeaderName)
-	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s", clientFeatureVersion, clientImpl))
 	domainName := h.domainName(request.GetDomainUUID())
+	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s, %s, %s, %s", clientFeatureVersion, clientImpl, domainName, call.Caller(), call.Service()))
 	hCtx := h.newHandlerContext(
 		ctx,
 		domainName,

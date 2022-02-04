@@ -3500,7 +3500,7 @@ func (wh *WorkflowHandler) QueryWorkflow(
 	call := yarpc.CallFromContext(ctx)
 	clientFeatureVersion := call.Header(common.FeatureVersionHeaderName)
 	clientImpl := call.Header(common.ClientImplHeaderName)
-	wh.GetLogger().Error(fmt.Sprintf("query version check %s, %s", clientFeatureVersion, clientImpl))
+	wh.GetLogger().Error(fmt.Sprintf("query version check %s, %s, %s", clientFeatureVersion, clientImpl, domainName))
 	req := &types.HistoryQueryWorkflowRequest{
 		DomainUUID: domainID,
 		Request:    queryRequest,

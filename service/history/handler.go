@@ -1285,7 +1285,8 @@ func (h *handlerImpl) QueryWorkflow(
 	call := yarpc.CallFromContext(ctx)
 	clientFeatureVersion := call.Header(common.FeatureVersionHeaderName)
 	clientImpl := call.Header(common.ClientImplHeaderName)
-	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s", clientFeatureVersion, clientImpl))
+	domainName, _ := h.GetDomainCache().GetDomainName(request.GetDomainUUID())
+	h.GetLogger().Error(fmt.Sprintf("query version check %s, %s, %s", clientFeatureVersion, clientImpl, domainName))
 	scope, sw := h.startRequestProfile(ctx, metrics.HistoryQueryWorkflowScope)
 	defer sw.Stop()
 
