@@ -353,7 +353,8 @@ func BatchActivity(ctx context.Context, batchParams BatchParams) (HeartBeatDetai
 					break Loop
 				}
 			case <-ctx.Done():
-				return HeartBeatDetails{}, ctx.Err()
+				deadline, _ := ctx.Deadline()
+				return HeartBeatDetails{}, fmt.Errorf("deadline %v, %v", deadline, ctx.Err().Error())
 			}
 		}
 
